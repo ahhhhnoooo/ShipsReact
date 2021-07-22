@@ -2,6 +2,8 @@
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 
+const P = Math.PI/180;
+
 function App() {
 
   const [drawables,setDrawables] = useState([]);
@@ -11,12 +13,16 @@ function App() {
 
 	//When load complete, add playerShip
 	useEffect(() => {
-		setDrawables([Ship()]);
+		let playerShip = Ship();
+		setDrawables([playerShip]);
 
   let updater = window.setInterval(() => {
 //		playerShip.direction = playerShip.direction + Math.PI/40;
 //		playerShip.frontTurret.direction = playerShip.frontTurret.direction + Math.PI/40;
 //console.log(keysPressed);
+//playerShip.move();
+
+
 	},1000);
 
 
@@ -50,6 +56,37 @@ console.log(prevKeysPressed)
   );
 }
 
+function Shot(x, y, direction, speed) {
+	let shot = {};
+	shot.x = x;
+	shot.y = y;
+	shot.direction = direction;
+	shot.speed = speed;
+	shot.width = 3;
+	shot.height = 3;
+
+	shot.move = () => {
+
+	}
+	shot.draw = (context) => {
+		context.save();
+    context.translate(shot.x, shot.y);
+    context.rotate(shot.direction);
+    context.beginPath();
+		context.ellipse(
+			0,
+			0,
+			shot.width,
+			shot.height,
+			0,
+			Math.PI/2,
+			-Math.PI/2);
+		context.lineTo(-10,0);
+		context.fill();
+		context.restore();
+	}
+}
+
 function Turret(x, y, width, height, direction) {
 	let turret = {};
 //x and y are the CENTER of the circle
@@ -58,8 +95,8 @@ function Turret(x, y, width, height, direction) {
 	turret.width = width;
   turret.height = height;
 	turret.direction = direction;
-  turret.gunwidth = width/6;
-  turret.gunheight = height/2;
+  turret.gunwidth = width/2;
+  turret.gunheight = height/6;
 
 	turret.draw = (context) => {
 		context.save();
@@ -75,14 +112,26 @@ function Turret(x, y, width, height, direction) {
 			0,
 			2*Math.PI );
 		context.rect(
-			-turret.gunwidth/2,
-			-turret.gunheight,
 			turret.gunwidth,
-			turret.gunheight
+			turret.gunheight/2,
+			-turret.gunwidth,
+			-turret.gunheight
 		);
+
 		context.fill();
 		context.restore();
   }
+
+	turret.fire = () => {
+		// Round should be fired at end of muzzle
+		let shot = Shot(turret.x + turret.width,
+			turret.y,
+			turret.direction,
+//TODO speed?
+			50);
+		return shot;
+	}
+
 	return turret;
 }
 
@@ -91,22 +140,23 @@ function Ship() {
 //x and y are the CENTER of the ship
 	ship.x = 100;
 	ship.y = 100;
-  ship.width = 10;
-	ship.height = 50;
+  ship.width = 50;
+	ship.height = 10;
   ship.direction = 0;
+	ship.speed = 10;
 
 //Turret placement is relative to the CENTER of the ship
   ship.frontTurret = Turret(
+		ship.width/3,
 		0,
-		-ship.height/3,
-		ship.width*2,
-		ship.width*2,
+		ship.height*2,
+		ship.height*2,
 		0 );
   ship.rearTurret = Turret(
+		-ship.width/3,
 		0,
-		ship.height/3,
-		ship.width*2,
-		ship.width*2,
+		ship.height*2,
+		ship.height*2,
 		-Math.PI );
 
 	ship.draw = (context) => {
@@ -122,12 +172,20 @@ function Ship() {
 			0,
 			0,
 			2*Math.PI );
+//TODO Using this to indicate front
+		context.lineTo(0,0);
 
 		context.stroke();
 		ship.frontTurret.draw(context);
 		ship.rearTurret.draw(context);
 		context.restore();
   }
+
+	//Updates position based on speed and direction
+	ship.move = () => {
+		ship.x = ship.x + ship.speed * Math.cos(ship.direction * P);
+		ship.y = ship.y + ship.speed * Math.sin(ship.direction * P);
+	}
 
 	return ship;
 }
