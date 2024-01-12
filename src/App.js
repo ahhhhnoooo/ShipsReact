@@ -21,18 +21,16 @@ function App() {
 		setDrawables([playerShip]);
 		window.addEventListener("keydown", onKeyDown)
 
+		//When closing, clean up the event listener
 		return () => {
 			window.removeEventListener("keydown", onKeyDown)
 		}
 	}, []);
 
-	console.log(keysPressed)
 	return (
 		<div className="App" >
 			<GameCanvas drawables={drawables} />
-			<p>
-				Edit <code>src/App.js</code> and save to reload.
-			</p>
+			<p></p>
 		</div>
 	);
 }
@@ -172,12 +170,11 @@ function Ship() {
 			ship.direction = ship.direction + Math.PI / 40;
 		}
 		if (keysPressed.includes('d')) {
-
+			ship.direction = ship.direction - Math.PI / 40;
 		}
 		if (keysPressed.includes('j')) {
 			ship.frontTurret.direction = ship.frontTurret.direction + Math.PI / 40;
 		}
-
 	}
 
 	return ship;
